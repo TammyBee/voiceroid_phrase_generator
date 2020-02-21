@@ -61,7 +61,7 @@ window.onload = function() {
         separated_sentences = JSON.parse(localStorage[LOCAL_STORAGE_KEY_SEPARATED_SENTENCES])["result"];
         build_current_model_view(separated_sentences);
         markov_chain_model = build_markov_chain_model(separated_sentences, BOS_SYMBOL);
-        if (markov_chain_model !== undefined) {
+        if (markov_chain_model != undefined) {
             button_delete_model.disabled = false;
             button_generate_sentences.disabled = false;
         }
@@ -83,7 +83,7 @@ window.onload = function() {
                     build_current_model_view(separated_sentences);
                     localStorage[LOCAL_STORAGE_KEY_SEPARATED_SENTENCES] = JSON.stringify(data);
                     markov_chain_model = build_markov_chain_model(separated_sentences, BOS_SYMBOL);
-                    if (markov_chain_model !== undefined) {
+                    if (markov_chain_model != undefined) {
                         button_delete_model.disabled = false;
                         button_generate_sentences.disabled = false;
                     }
