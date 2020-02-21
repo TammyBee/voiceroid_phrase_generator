@@ -47,13 +47,14 @@ class MarkovChain {
 }
 
 const BOS_SYMBOL = '<BOS>';
-const LOCAL_STORAGE_KEY_SEPARATED_SENTENCES = 'separated_sentences';
+const LOCAL_STORAGE_KEY_SEPARATED_SENTENCES = 'vpg_separated_sentences';
 
 let separated_sentences;
 let markov_chain_model;
 
 window.onload = function() {
     const button_build_model = document.getElementById('button_build_model');
+    const button_delete_model = document.getElementById('button_delete_model');
     const button_generate_sentences = document.getElementById('button_generate_sentences');
 
     if (localStorage[LOCAL_STORAGE_KEY_SEPARATED_SENTENCES] != undefined) {
@@ -61,6 +62,7 @@ window.onload = function() {
         build_current_model_view(separated_sentences);
         markov_chain_model = build_markov_chain_model(separated_sentences, BOS_SYMBOL);
         if (markov_chain_model !== undefined) {
+            button_delete_model.disabled = false;
             button_generate_sentences.disabled = false;
         }
     }
@@ -82,6 +84,7 @@ window.onload = function() {
                     localStorage[LOCAL_STORAGE_KEY_SEPARATED_SENTENCES] = JSON.stringify(data);
                     markov_chain_model = build_markov_chain_model(separated_sentences, BOS_SYMBOL);
                     if (markov_chain_model !== undefined) {
+                        button_delete_model.disabled = false;
                         button_generate_sentences.disabled = false;
                     }
                 });
@@ -110,13 +113,20 @@ window.onload = function() {
 
     function build_current_model_view(separated_sentences) {
         const number_of_phrases = document.getElementById("view_model_info_number_of_phrases");
+        const number_of_segments = document.getElementById("view_model_info_number_of_segments");
+
+        if (separated_sentences == undefined) {
+            number_of_phrases.innerHTML = "-";
+            number_of_segments.innerHTML = "-";
+            return;
+        }
+
         number_of_phrases.innerHTML = separated_sentences.length;
 
         let count = 0;
         for (let sentence of separated_sentences) {
             count += sentence.length;
         }
-        const number_of_segments = document.getElementById("view_model_info_number_of_segments");
         number_of_segments.innerHTML = count;
     }
 
@@ -146,8 +156,23 @@ window.onload = function() {
         fetchSeparatedSentences(files[0]);
     })
 
+    button_delete_model.addEventListener("click", () => {
+        let result = window.confirm("現在のモデルを削除しますか？");
+        if (!result) {
+            return;
+        }
+
+        localStorage.removeItem(LOCAL_STORAGE_KEY_SEPARATED_SENTENCES);
+        separated_sentences = undefined;
+        markov_chain_model = undefined;
+
+        build_current_model_view(separated_sentences);
+        button_delete_model.disabled = true;
+        button_generate_sentences.disabled = true;
+    })
+
     button_generate_sentences.addEventListener("click", () => {
-        if (!markov_chain_model) {
+        if (markov_chain_model == undefined) {
             alert("[Error]\n文を生成するためのモデルが生成されていません。");
             return;
         }
