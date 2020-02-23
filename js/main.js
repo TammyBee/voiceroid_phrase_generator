@@ -1,33 +1,42 @@
 class MarkovChain {
-    constructor(segments) {
+    constructor(segments, state_size) {
         this.map = new Map();
-        for (let i = 0; i < segments.length - 1; i++) {
-            let seg1 = segments[i];
-            let seg2 = segments[i + 1];
-            if (this.map.has(seg1)) {
-                this.map.get(seg1).push(seg2);
+        this.state_size = state_size;
+        for (let i = 0; i < segments.length - this.state_size; i++) {
+            let segs = segments.slice(i, i + this.state_size).join('\t');
+            let next_seg = segments[i + this.state_size];
+            if (this.map.has(segs)) {
+                this.map.get(segs).push(next_seg);
             } else {
-                this.map.set(seg1, [seg2]);
+                this.map.set(segs, [next_seg]);
             }
         }
     }
 
     generate_sentence_internal(start_segment, stop_segment) {
-        if (!this.map.has(start_segment)) {
+        let start_candidates = [];
+        for (let key of this.map.keys()) {
+            if (key.split('\t')[0] == start_segment) {
+                start_candidates.push(key);
+            }
+        }
+        if (start_candidates.length == 0) {
             throw new NotFoundStartStringError("指定した最初の単語から文を生成できませんでした。\n最初の単語を変更してください。");
         }
 
-        let sentence = "";
-        let previous_segment = start_segment;
+        let previous_chunk = start_candidates[Math.floor(Math.random() * start_candidates.length)];
+        let sentence = previous_chunk.replace('\t','');
+        let next_key = previous_chunk;
         while (true) {
-            sentence += previous_segment;
-
-            let candidates = this.map.get(previous_segment);
-            previous_segment = candidates[Math.floor(Math.random() * candidates.length)]
-            if (!this.map.has(previous_segment)) {
+            let candidates = this.map.get(next_key);
+            let next_segment = candidates[Math.floor(Math.random() * candidates.length)];
+            if (next_segment === stop_segment) {
                 break;
             }
-            if (previous_segment === stop_segment) {
+
+            sentence += next_segment;
+            next_key = next_key.split('\t').slice(1).join('\t') + '\t' + next_segment;
+            if (!this.map.has(next_key)) {
                 break;
             }
         }
@@ -66,6 +75,8 @@ const LOCAL_STORAGE_KEY_SEPARATED_SENTENCES = 'vpg_separated_sentences';
 let separated_sentences;
 let markov_chain_model;
 
+let markov_chain_model_state_size = 2;
+
 window.onload = function() {
     const button_build_model = document.getElementById('button_build_model');
     const button_delete_model = document.getElementById('button_delete_model');
@@ -74,7 +85,7 @@ window.onload = function() {
     if (localStorage[LOCAL_STORAGE_KEY_SEPARATED_SENTENCES] != undefined) {
         separated_sentences = JSON.parse(localStorage[LOCAL_STORAGE_KEY_SEPARATED_SENTENCES])["result"];
         build_current_model_view(separated_sentences);
-        markov_chain_model = build_markov_chain_model(separated_sentences, BOS_SYMBOL);
+        markov_chain_model = build_markov_chain_model(separated_sentences, markov_chain_model_state_size, BOS_SYMBOL);
         if (markov_chain_model != undefined) {
             button_delete_model.disabled = false;
             button_generate_sentences.disabled = false;
@@ -96,7 +107,7 @@ window.onload = function() {
                     separated_sentences = data["result"];
                     build_current_model_view(separated_sentences);
                     localStorage[LOCAL_STORAGE_KEY_SEPARATED_SENTENCES] = JSON.stringify(data);
-                    markov_chain_model = build_markov_chain_model(separated_sentences, BOS_SYMBOL);
+                    markov_chain_model = build_markov_chain_model(separated_sentences, markov_chain_model_state_size, BOS_SYMBOL);
                     if (markov_chain_model != undefined) {
                         button_delete_model.disabled = false;
                         button_generate_sentences.disabled = false;
@@ -116,13 +127,13 @@ window.onload = function() {
         upload(pdic_file);
     }
 
-    function build_markov_chain_model(separated_sentences, bos_symbol) {
+    function build_markov_chain_model(separated_sentences, n, bos_symbol) {
         segments = []
         for (let separated_sentence of separated_sentences) {
             segments.push(bos_symbol);
             Array.prototype.push.apply(segments, separated_sentence);
         }
-        return new MarkovChain(segments);
+        return new MarkovChain(segments, n);
     }
 
     function build_current_model_view(separated_sentences) {
