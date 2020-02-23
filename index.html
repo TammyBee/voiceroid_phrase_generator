@@ -26,6 +26,31 @@
 		<p>
 			VOICEROIDのフレーズ辞書に登録された文をもとに、マルコフ連鎖で文を自動生成するサイトです。
 		</p>
+		<section class="my-4">
+			<h2>使い方</h2>
+			<p>
+				<ol>
+					<li>
+						<p>
+							VOICEROIDのフレーズ辞書ファイルを選択します。
+						</p>
+					</li>
+					<li>
+						<p>
+							「モデル生成」ボタンを押します。<br>
+							「文生成」ボタンが押せるようになるまで待ちましょう。
+						</p>
+					</li>
+					<li>
+						<p>
+							好きなだけ「文生成」ボタンを押します。<br>
+							一旦ページを離れても、生成されたモデル*1がブラウザ上に保存されるため、モデルを生成しなくとも文を生成できます。
+						</p>
+					</li>
+				</ol>
+				<small>*1 正確に言うと、分かち書き(単語ごとに分割)した後のフレーズの配列</small>
+			</p>
+		</section>
 	</header>
 
 	<main>
@@ -37,7 +62,7 @@
 					<div class="col-7">
 						<input type="file" id="input_txt_file" class="form-control-file" accept=".pdic">
 						<small class="form-text text-muted">
-							フレーズ辞書ファイル(*.pdic)を選択してください。<br>
+							VOICEROIDのフレーズ辞書ファイル(*.pdic)を選択してください。<br>
 							VOICEROID2エディタの場合、フレーズ辞書の場所は「ツール > オプション > ユーザー辞書 > フレーズ辞書」から確認することができます。
 						</small>
 					</div>
@@ -74,7 +99,7 @@
 			<h2>文生成</h2>
 			<form id="form_generate_sentences" class="form-horizontal">
 				<div class="form-group row">
-					<label for="input_start_word" class="col-3 col-form-label">最初の単語(任意)</label>
+					<label for="input_start_word" class="col-3 col-form-label">最初の単語 (任意)</label>
 					<div class="col-7">
 						<input type="text" class="form-control" id="input_start_word" value="" />
 						<small class="form-text text-muted">
@@ -84,7 +109,7 @@
 					</div>
 				</div>
 				<div class="form-group row">
-					<label for="input_contain_string" class="col-3 col-form-label">含まれる文字列(任意)</label>
+					<label for="input_contain_string" class="col-3 col-form-label">含まれる文字列 (任意)</label>
 					<div class="col-7">
 						<input type="text" class="form-control" id="input_contain_string" value="" />
 						<small class="form-text text-muted">
@@ -153,9 +178,12 @@
 	<br><br><br><br>
 
 	<footer class="my-4">
-		<address>
-			作者:民火(Twitter:<a href="https://twitter.com/tammybee_tmb" target="_blank">@tammybee_tmb</a>)
-		</address>
+		<p>
+			ボイロフレーズジェネレーター Ver,1.0.0
+			<address>
+				作者:民火 (Twitter:<a href="https://twitter.com/tammybee_tmb" target="_blank">@tammybee_tmb</a>)
+			</address>
+		</p>
 	</footer>
 </body>
 
