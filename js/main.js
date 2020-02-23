@@ -147,11 +147,15 @@ window.onload = function() {
     function build_result_view(generated_sentences) {
         let view = ``;
         for (let sentence of generated_sentences) {
-            view += `<tr><td>${sentence}</td></tr>`;
+            view += `<tr><td>${sentence}</td><td>${build_tweet_button(sentence)}</td></tr>`;
         }
 
         const result = document.getElementById("view_result_generated_sentences");
         result.innerHTML = view;
+    }
+
+    function build_tweet_button(sentence){
+        return `<a href="https://twitter.com/share?url=https://tammybee.github.io/voiceroid_phrase_generator/&related=tammybee_tmb&hashtags=ボイロフレーズジェネレーター&text=${sentence}" rel="nofollow" target="_blank">Tweet</a>`;
     }
 
     button_build_model.addEventListener("click", () => {
