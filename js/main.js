@@ -109,7 +109,7 @@ window.onload = function() {
                 }
             ).finally(() => {
                 button_build_model.disabled = false;
-                button_build_model.value = "モデル生成";
+                button_build_model.innerHTML = `モデル生成`;
             });
         };
 
@@ -154,7 +154,7 @@ window.onload = function() {
         result.innerHTML = view;
     }
 
-    function build_tweet_button(sentence){
+    function build_tweet_button(sentence) {
         return `<a href="https://twitter.com/share?url=https://tammybee.github.io/voiceroid_phrase_generator/&related=tammybee_tmb&hashtags=ボイロフレーズジェネレーター&text=${sentence}" rel="nofollow" target="_blank">Tweet</a>`;
     }
 
@@ -168,7 +168,7 @@ window.onload = function() {
         }
 
         button_build_model.disabled = true;
-        button_build_model.value = "生成中...";
+        button_build_model.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 生成中...`;
 
         fetchSeparatedSentences(files[0]);
     })
