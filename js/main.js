@@ -1,3 +1,7 @@
+const BOS_SYMBOL = '<BOS>';
+const LOCAL_STORAGE_KEY_SEPARATED_SENTENCES = 'vpg_separated_sentences';
+const SEPARATE_PDIC_API = 'https://flask-janome-api.herokuapp.com/separate_pdic';
+
 class MarkovChain {
     constructor(segments, state_size) {
         this.map = new Map();
@@ -25,7 +29,7 @@ class MarkovChain {
         }
 
         let previous_chunk = start_candidates[Math.floor(Math.random() * start_candidates.length)];
-        let sentence = previous_chunk.replace('\t','');
+        let sentence = previous_chunk.replace('\t', '');
         let next_key = previous_chunk;
         while (true) {
             let candidates = this.map.get(next_key);
@@ -44,14 +48,31 @@ class MarkovChain {
         return sentence;
     }
 
-    generate_sentence(start_segment, stop_segment, contain_strings, min_length, max_length, max_number_of_trials) {
+    generate_sentence(start_segment, stop_segment, contain_strings, min_length, max_length, max_number_of_trials, exclude_pdic_src) {
         for (let i = 0; i < max_number_of_trials; i++) {
             let sentence = this.generate_sentence_internal(start_segment, stop_segment);
-            if (sentence.length >= min_length && sentence.length <= max_length && contain_strings.every(s => sentence.includes(s))) {
+            if (sentence.length >= min_length && sentence.length <= max_length &&
+                contain_strings.every(s => sentence.includes(s)) &&
+                (!exclude_pdic_src || !this.is_pdic_phrase(sentence, start_segment))) {
                 return sentence;
             }
         }
         throw new NotGenerateSentenceError("指定した条件の文を生成できませんでした。");
+    }
+
+    is_pdic_phrase(sentence, start_segment) {
+        if (this.cache_phrases == undefined) {
+            this.cache_phrases = separated_sentences.map(separated_sentence => separated_sentence.join(''));
+        }
+        let s = sentence;
+        if (start_segment == BOS_SYMBOL) {
+            s = s.slice(BOS_SYMBOL.length);
+        }
+        console.log(s);
+        if(this.cache_phrases.includes(s)){
+            console.log(s);
+        }
+        return this.cache_phrases.includes(s);
     }
 }
 
@@ -68,9 +89,6 @@ class NotGenerateSentenceError extends Error {
         this.name = "NotGenerateSentenceError";
     }
 }
-
-const BOS_SYMBOL = '<BOS>';
-const LOCAL_STORAGE_KEY_SEPARATED_SENTENCES = 'vpg_separated_sentences';
 
 let separated_sentences;
 let markov_chain_model;
@@ -95,7 +113,7 @@ window.onload = function() {
     function fetchSeparatedSentences(pdic_file) {
         const upload = (file) => {
             /* https://flask-janome-api.herokuapp.com/separate_pdic */
-            fetch('https://flask-janome-api.herokuapp.com/separate_pdic', {
+            fetch(SEPARATE_PDIC_API, {
                 method: 'POST',
                 headers: {
                     "Content-Type": "text/plain"
@@ -212,6 +230,7 @@ window.onload = function() {
         let max_sentence_length = Number(document.getElementById('input_max_sentence_length').value);
         const max_number_of_trials = Number(document.getElementById('input_max_number_of_trials').value);
         const to_halfwidth = document.getElementById('checkbox_to_halfwidth').checked;
+        const exclude_pdic_src = document.getElementById('checkbox_exclude_pdic_src').checked;
 
         const starts_with_bos_symbol = (input_start_word === "");
         if (starts_with_bos_symbol) {
@@ -223,7 +242,7 @@ window.onload = function() {
         let generated_sentences = [];
         for (let i = 0; i < number_of_sentences; i++) {
             try {
-                let generated_sentence = markov_chain_model.generate_sentence(input_start_word, BOS_SYMBOL, input_contain_string, min_sentence_length, max_sentence_length, max_number_of_trials);
+                let generated_sentence = markov_chain_model.generate_sentence(input_start_word, BOS_SYMBOL, input_contain_string, min_sentence_length, max_sentence_length, max_number_of_trials, exclude_pdic_src);
                 if (starts_with_bos_symbol) {
                     generated_sentence = generated_sentence.slice(BOS_SYMBOL.length);
                 }

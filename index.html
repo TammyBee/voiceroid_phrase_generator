@@ -158,6 +158,19 @@
 					</div>
 				</div>
 				<div class="form-group row">
+					<div class="col-3">
+						<label for="checkbox_exclude_pdic_src" class="form-check-label">フレーズ辞書との重複回避</label>
+					</div>
+					<div class="col-7">
+						<div class="form-check">
+							<input type="checkbox" class="form-check-input" id="checkbox_exclude_pdic_src" checked="checked">
+						</div><br>
+						<small class="form-text text-muted">
+							生成された文がフレーズ辞書に登録されている場合、<br>その生成された文を除き、文の再生成を試みます。
+						</small>
+					</div>
+				</div>
+				<div class="form-group row">
 					<div class="col-sm-10">
 						<button type="button" id="button_generate_sentences" class="btn btn-primary" disabled>文生成</button>
 					</div>
@@ -179,7 +192,7 @@
 
 	<footer class="my-4">
 		<p>
-			ボイロフレーズジェネレーター Ver,1.0.0
+			ボイロフレーズジェネレーター Ver,1.0.1
 			<address>
 				作者:民火 (Twitter:<a href="https://twitter.com/tammybee_tmb" target="_blank">@tammybee_tmb</a>)
 			</address>
