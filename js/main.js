@@ -131,11 +131,10 @@ window.onload = function() {
     }
 
     function build_result_view(generated_sentences) {
-        let view = `<table>`;
+        let view = ``;
         for (let sentence of generated_sentences) {
             view += `<tr><td>${sentence}</td></tr>`;
         }
-        view += `</table>`;
 
         const result = document.getElementById("view_result_generated_sentences");
         result.innerHTML = view;
