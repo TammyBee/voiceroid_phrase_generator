@@ -14,7 +14,7 @@ class MarkovChain {
 
     generate_sentence_internal(start_segment, stop_segment) {
         if (!this.map.has(start_segment)) {
-            return "<Error> 指定した開始単語から文を生成できませんでした。";
+            throw new NotFoundStartStringError("指定した最初の単語から文を生成できませんでした。\n最初の単語を変更してください。");
         }
 
         let sentence = "";
@@ -42,7 +42,21 @@ class MarkovChain {
                 return sentence;
             }
         }
-        return "[Error] 指定した条件の文を生成できませんでした。";
+        throw new NotGenerateSentenceError("指定した条件の文を生成できませんでした。");
+    }
+}
+
+class NotFoundStartStringError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = "NotFoundStartStringError";
+    }
+}
+
+class NotGenerateSentenceError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = "NotGenerateSentenceError";
     }
 }
 
@@ -131,11 +145,10 @@ window.onload = function() {
     }
 
     function build_result_view(generated_sentences) {
-        let view = `<table>`;
+        let view = ``;
         for (let sentence of generated_sentences) {
             view += `<tr><td>${sentence}</td></tr>`;
         }
-        view += `</table>`;
 
         const result = document.getElementById("view_result_generated_sentences");
         result.innerHTML = view;
@@ -194,19 +207,32 @@ window.onload = function() {
 
         let generated_sentences = [];
         for (let i = 0; i < number_of_sentences; i++) {
-            let generated_sentence = markov_chain_model.generate_sentence(input_start_word, BOS_SYMBOL, input_contain_string, min_sentence_length, max_sentence_length, max_number_of_trials);
-            if (starts_with_bos_symbol) {
-                generated_sentence = generated_sentence.slice(BOS_SYMBOL.length);
+            try {
+                let generated_sentence = markov_chain_model.generate_sentence(input_start_word, BOS_SYMBOL, input_contain_string, min_sentence_length, max_sentence_length, max_number_of_trials);
+                if (starts_with_bos_symbol) {
+                    generated_sentence = generated_sentence.slice(BOS_SYMBOL.length);
+                }
+                if (to_halfwidth) {
+                    generated_sentence = generated_sentence.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
+                        return String.fromCharCode(s.charCodeAt(0) - 65248);
+                    });
+                }
+                generated_sentences.push(generated_sentence);
+            } catch (error) {
+                if (error instanceof NotFoundStartStringError) {
+                    alert("[Error]\n" + error.message);
+                    console.log(error);
+                    break;
+                } else {
+                    generated_sentences.push("<div class='text-danger'>[Error] " + error.message + "</div>");
+                    console.log(error);
+                }
             }
-            if (to_halfwidth) {
-                generated_sentence = generated_sentence.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
-                    return String.fromCharCode(s.charCodeAt(0) - 65248);
-                });
-            }
-            generated_sentences.push(generated_sentence);
         }
 
-        build_result_view(generated_sentences);
+        if (generated_sentences.length > 0) {
+            build_result_view(generated_sentences);
+        }
     })
 
 }
