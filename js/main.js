@@ -1,5 +1,6 @@
 const BOS_SYMBOL = '<BOS>';
 const LOCAL_STORAGE_KEY_SEPARATED_SENTENCES = 'vpg_separated_sentences';
+const LOCAL_STORAGE_KEY_SEPARATE_PARAMETERS = 'vpg_separate_parameters';
 const SEPARATE_PDIC_API = 'https://flask-janome-api.herokuapp.com/separate_pdic';
 
 class MarkovChain {
@@ -69,7 +70,7 @@ class MarkovChain {
             s = s.slice(BOS_SYMBOL.length);
         }
         console.log(s);
-        if(this.cache_phrases.includes(s)){
+        if (this.cache_phrases.includes(s)) {
             console.log(s);
         }
         return this.cache_phrases.includes(s);
@@ -91,18 +92,23 @@ class NotGenerateSentenceError extends Error {
 }
 
 let separated_sentences;
+let separate_parameters;
 let markov_chain_model;
 
 let markov_chain_model_state_size = 2;
+let error_message = '';
 
 window.onload = function() {
     const button_build_model = document.getElementById('button_build_model');
     const button_delete_model = document.getElementById('button_delete_model');
     const button_generate_sentences = document.getElementById('button_generate_sentences');
+    const button_user_dict_copy = document.getElementById('button_user_dict_copy');
 
     if (localStorage[LOCAL_STORAGE_KEY_SEPARATED_SENTENCES] != undefined) {
-        separated_sentences = JSON.parse(localStorage[LOCAL_STORAGE_KEY_SEPARATED_SENTENCES])["result"];
-        build_current_model_view(separated_sentences);
+        let json_data = JSON.parse(localStorage[LOCAL_STORAGE_KEY_SEPARATED_SENTENCES]);
+        separated_sentences = json_data["result"];
+        separate_parameters = json_data["params"];
+        build_current_model_view(separated_sentences, separate_parameters);
         markov_chain_model = build_markov_chain_model(separated_sentences, markov_chain_model_state_size, BOS_SYMBOL);
         if (markov_chain_model != undefined) {
             button_delete_model.disabled = false;
@@ -112,8 +118,20 @@ window.onload = function() {
 
     function fetchSeparatedSentences(pdic_file) {
         const upload = (file) => {
-            /* https://flask-janome-api.herokuapp.com/separate_pdic */
-            fetch(SEPARATE_PDIC_API, {
+            const unicode_normalization = document.getElementById('checkbox_unicode_normalization').checked;
+            const to_upper_case = document.getElementById('radio_to_upper_case').checked;
+            const to_lower_case = document.getElementById('radio_to_lower_case').checked;
+            const compound_noun = document.getElementById('checkbox_compound_noun').checked;
+            const user_dict = document.getElementById('textarea_user_dict').value;
+
+            const url = new URL(SEPARATE_PDIC_API);
+            url.searchParams.set("unicode_normalization", unicode_normalization);
+            url.searchParams.set("to_upper_case", to_upper_case);
+            url.searchParams.set("to_lower_case", to_lower_case);
+            url.searchParams.set("compound_noun", compound_noun);
+            url.searchParams.set("user_dict", user_dict);
+
+            fetch(url.toString(), {
                 method: 'POST',
                 headers: {
                     "Content-Type": "text/plain"
@@ -121,20 +139,27 @@ window.onload = function() {
                 body: file
             }).then(response => {
                 return response.json().then(data => {
-                    console.log(data)
-                    separated_sentences = data["result"];
-                    build_current_model_view(separated_sentences);
-                    localStorage[LOCAL_STORAGE_KEY_SEPARATED_SENTENCES] = JSON.stringify(data);
-                    markov_chain_model = build_markov_chain_model(separated_sentences, markov_chain_model_state_size, BOS_SYMBOL);
-                    if (markov_chain_model != undefined) {
-                        button_delete_model.disabled = false;
-                        button_generate_sentences.disabled = false;
+                    if (response.ok) {
+                        console.log(data)
+                        separated_sentences = data["result"];
+                        separate_parameters = data["params"];
+                        build_current_model_view(separated_sentences, separate_parameters);
+                        localStorage[LOCAL_STORAGE_KEY_SEPARATED_SENTENCES] = JSON.stringify(data);
+                        markov_chain_model = build_markov_chain_model(separated_sentences, markov_chain_model_state_size, BOS_SYMBOL);
+                        if (markov_chain_model != undefined) {
+                            button_delete_model.disabled = false;
+                            button_generate_sentences.disabled = false;
+                        }
+                    } else {
+                        let error_message = data["message"];
+                        alert("[ERROR]\nモデルを生成できませんでした。\nしばらく待ってから、やり直してください。\nこのアラートが何度も出る場合は、作者に報告してください。\n[内容]\n" + error_message)
+                        console.log(error_message)
                     }
                 });
             }).catch(
                 error => {
                     alert("[ERROR]\nモデルを生成できませんでした。\nしばらく待ってから、やり直してください。\nこのアラートが何度も出る場合は、作者に報告してください。")
-                    console.log(error)
+                    console.log(error.message)
                 }
             ).finally(() => {
                 button_build_model.disabled = false;
@@ -154,13 +179,25 @@ window.onload = function() {
         return new MarkovChain(segments, n);
     }
 
-    function build_current_model_view(separated_sentences) {
+    function build_current_model_view(separated_sentences, separate_parameters) {
         const number_of_phrases = document.getElementById("view_model_info_number_of_phrases");
         const number_of_segments = document.getElementById("view_model_info_number_of_segments");
+        const unicode_normalization = document.getElementById("view_model_info_unicode_normalization");
+        const alphabet_filter = document.getElementById("view_model_info_alphabet_filter");
+        const compound_noun = document.getElementById("view_model_info_compound_noun");
 
         if (separated_sentences == undefined) {
             number_of_phrases.innerHTML = "-";
             number_of_segments.innerHTML = "-";
+        }
+
+        if (separate_parameters == undefined) {
+            unicode_normalization.innerHTML = "-";
+            alphabet_filter.innerHTML = "-";
+            compound_noun.innerHTML = "-";
+        }
+
+        if (separated_sentences == undefined || separate_parameters == undefined) {
             return;
         }
 
@@ -171,6 +208,57 @@ window.onload = function() {
             count += sentence.length;
         }
         number_of_segments.innerHTML = count;
+
+        if (separate_parameters != undefined) {
+            unicode_normalization.innerHTML = separate_parameters["unicode_normalization"];
+            compound_noun.innerHTML = separate_parameters["compound_noun"];
+            build_user_dict_view(separate_parameters["user_dict"]);
+            alphabet_filter.innerHTML = "なし";
+            if (separate_parameters["to_lower_case"]) {
+                alphabet_filter.innerHTML = "小文字化";
+            } else if (separate_parameters["to_upper_case"]) {
+                alphabet_filter.innerHTML = "大文字化";
+            }
+        }
+    }
+
+    function build_user_dict_view(user_dict) {
+        const info_user_dict = document.getElementById("view_model_info_user_dict");
+        const modal_body_user_dict = document.getElementById("modal_body_user_dict");
+
+        let entries = user_dict.split("\n");
+        let view = `${entries.length}件`;
+
+
+        if(entries.length > 0){
+            let view_entries = ``;
+            for(let entry of entries){
+                let splits = entry.split(",");
+                view_entries += `<tr><td>${splits[0]}</td><td>${splits[1]}</td><td>${splits[2]}</td></tr>`;
+            }
+            let view_table = `
+                <table class="table" style="table-layout:fixed;">
+                    <thead>
+                        <tr>
+                            <th>表層形</th>
+                            <th>品詞</th>
+                            <th>読み</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${view_entries}
+                    </tbody>
+                </table>
+            `;
+            modal_body_user_dict.innerHTML = view_table;
+
+            view += `
+                <button type="button" class="btn btn-link" data-toggle="modal" data-target="#modal_user_dict">
+                    ...
+                </button>`;
+
+        }
+        info_user_dict.innerHTML = view;
     }
 
     function build_result_view(generated_sentences) {
@@ -210,9 +298,10 @@ window.onload = function() {
 
         localStorage.removeItem(LOCAL_STORAGE_KEY_SEPARATED_SENTENCES);
         separated_sentences = undefined;
+        separate_parameters = undefined;
         markov_chain_model = undefined;
 
-        build_current_model_view(separated_sentences);
+        build_current_model_view(separated_sentences, separate_parameters);
         button_delete_model.disabled = true;
         button_generate_sentences.disabled = true;
     })
@@ -266,6 +355,18 @@ window.onload = function() {
 
         if (generated_sentences.length > 0) {
             build_result_view(generated_sentences);
+        }
+    })
+
+    button_user_dict_copy.addEventListener("click", () => {
+        let str = separate_parameters["user_dict"];
+        if(window.clipboardData){
+            window.clipboardData.setData(str);
+        }else if(navigator.clipboard){
+            navigator.clipboard.writeText(str);
+            alert("クリップボードにコピーしました。");
+        }else{
+            alert("[Error]\nクリップボードにコピーできませんでした。");
         }
     })
 
