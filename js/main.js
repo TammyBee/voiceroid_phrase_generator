@@ -227,10 +227,10 @@ window.onload = function() {
         const modal_body_user_dict = document.getElementById("modal_body_user_dict");
 
         let entries = user_dict.split("\n");
-        let view = `${entries.length}件`;
+        let view = `0件`;
 
-
-        if(entries.length > 0){
+        if(user_dict != '' && entries.length > 0){
+            view = `${entries.length}件`;
             let view_entries = ``;
             for(let entry of entries){
                 let splits = entry.split(",");
