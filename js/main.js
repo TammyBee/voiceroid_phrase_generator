@@ -98,7 +98,7 @@ let markov_chain_model;
 let markov_chain_model_state_size = 2;
 let error_message = '';
 
-window.onload = function() {
+window.onload = function () {
     const button_build_model = document.getElementById('button_build_model');
     const button_delete_model = document.getElementById('button_delete_model');
     const button_generate_sentences = document.getElementById('button_generate_sentences');
@@ -229,10 +229,10 @@ window.onload = function() {
         let entries = user_dict.split("\n");
         let view = `0件`;
 
-        if(user_dict != '' && entries.length > 0){
+        if (user_dict != '' && entries.length > 0) {
             view = `${entries.length}件`;
             let view_entries = ``;
-            for(let entry of entries){
+            for (let entry of entries) {
                 let splits = entry.split(",");
                 view_entries += `<tr><td>${splits[0]}</td><td>${splits[1]}</td><td>${splits[2]}</td></tr>`;
             }
@@ -272,7 +272,7 @@ window.onload = function() {
     }
 
     function build_tweet_button(sentence) {
-        return `<a href="https://twitter.com/share?url=https://tammybee.github.io/voiceroid_phrase_generator/&related=tammybee_tmb&hashtags=ボイロフレーズジェネレーター&text=${sentence}" rel="nofollow" target="_blank">Tweet</a>`;
+        return `<a href="https://twitter.com/share?url=https://tammybee.github.io/voiceroid_phrase_generator/&related=tammybee_tmb&hashtags=ボイロフレーズジェネレーター&text=${encodeURI(sentence)}" rel="nofollow" target="_blank">Tweet</a>`;
     }
 
     button_build_model.addEventListener("click", () => {
@@ -336,7 +336,7 @@ window.onload = function() {
                     generated_sentence = generated_sentence.slice(BOS_SYMBOL.length);
                 }
                 if (to_halfwidth) {
-                    generated_sentence = generated_sentence.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
+                    generated_sentence = generated_sentence.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function (s) {
                         return String.fromCharCode(s.charCodeAt(0) - 65248);
                     });
                 }
@@ -360,12 +360,12 @@ window.onload = function() {
 
     button_user_dict_copy.addEventListener("click", () => {
         let str = separate_parameters["user_dict"];
-        if(window.clipboardData){
+        if (window.clipboardData) {
             window.clipboardData.setData(str);
-        }else if(navigator.clipboard){
+        } else if (navigator.clipboard) {
             navigator.clipboard.writeText(str);
             alert("クリップボードにコピーしました。");
-        }else{
+        } else {
             alert("[Error]\nクリップボードにコピーできませんでした。");
         }
     })

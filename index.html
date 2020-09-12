@@ -30,26 +30,26 @@
 		<section class="my-4">
 			<h2>使い方</h2>
 			<p>
-				<ol>
-					<li>
-						<p>
-							VOICEROIDのフレーズ辞書ファイルを選択します。
-						</p>
-					</li>
-					<li>
-						<p>
-							「モデル生成」ボタンを押します。<br>
-							「文生成」ボタンが押せるようになるまで待ちましょう。
-						</p>
-					</li>
-					<li>
-						<p>
-							好きなだけ「文生成」ボタンを押します。<br>
-							一旦ページを離れても、生成されたモデル*1がブラウザ上に保存されるため、モデルを生成しなくとも文を生成できます。
-						</p>
-					</li>
-				</ol>
-				<small>*1 正確に言うと、分かち書き(単語ごとに分割)した後のフレーズの配列</small>
+			<ol>
+				<li>
+					<p>
+						VOICEROIDのフレーズ辞書ファイルを選択します。
+					</p>
+				</li>
+				<li>
+					<p>
+						「モデル生成」ボタンを押します。<br>
+						「文生成」ボタンが押せるようになるまで待ちましょう。
+					</p>
+				</li>
+				<li>
+					<p>
+						好きなだけ「文生成」ボタンを押します。<br>
+						一旦ページを離れても、生成されたモデル*1がブラウザ上に保存されるため、モデルを生成しなくとも文を生成できます。
+					</p>
+				</li>
+			</ol>
+			<small>*1 正確に言うと、分かち書き(単語ごとに分割)した後のフレーズの配列</small>
 			</p>
 		</section>
 	</header>
@@ -86,7 +86,8 @@
 						<label for="textarea_user_dict" class="form-check-label">ユーザー定義辞書</label>
 					</div>
 					<div class="col-7">
-						<textarea class="form-control" id="textarea_user_dict" rows="3" placeholder="琴葉茜,名詞,コトノハアカネ&#13;&#10;琴葉葵,名詞,コトノハアオイ"></textarea>
+						<textarea class="form-control" id="textarea_user_dict" rows="3"
+							placeholder="琴葉茜,名詞,コトノハアカネ&#13;&#10;琴葉葵,名詞,コトノハアオイ"></textarea>
 						<small class="form-text text-muted">
 							「&lt;表層形&gt;,&lt;品詞&gt;,&lt;読み&gt;」の形式で記述してください。<br>
 							複数の単語を登録する場合は改行して記述します。
@@ -98,19 +99,22 @@
 						<legend class="col-form-label col-3">英字変換</legend>
 						<div class="col-7">
 							<div class="form-check">
-								<input class="form-check-input" type="radio" name="gridRadios_alphabet_filter" id="radio_no_alphabet_filter" value="no_alphabet_filter" checked>
+								<input class="form-check-input" type="radio" name="gridRadios_alphabet_filter"
+									id="radio_no_alphabet_filter" value="no_alphabet_filter" checked>
 								<label class="form-check-label" for="gridRadios1">
 									なし
 								</label>
 							</div>
 							<div class="form-check">
-								<input class="form-check-input" type="radio" name="gridRadios_alphabet_filter" id="radio_to_lower_case" value="to_lower_case">
+								<input class="form-check-input" type="radio" name="gridRadios_alphabet_filter"
+									id="radio_to_lower_case" value="to_lower_case">
 								<label class="form-check-label" for="gridRadios2">
 									小文字化 (例: A → a, Voiceroid → voiceroid)
 								</label>
 							</div>
 							<div class="form-check">
-								<input class="form-check-input" type="radio" name="gridRadios_alphabet_filter" id="radio_to_upper_case" value="to_upper_case">
+								<input class="form-check-input" type="radio" name="gridRadios_alphabet_filter"
+									id="radio_to_upper_case" value="to_upper_case">
 								<label class="form-check-label" for="gridRadios3">
 									大文字化 (例: a → A, Voiceroid → VOICEROID)
 								</label>
@@ -165,7 +169,8 @@
 						<td id="view_model_info_compound_noun">-</td>
 						<td>
 							<div class="text-right">
-								<button type="button" id="button_delete_model" class="btn btn-danger" disabled>削除</button>
+								<button type="button" id="button_delete_model" class="btn btn-danger"
+									disabled>削除</button>
 							</div>
 						</td>
 					</tr>
@@ -231,7 +236,8 @@
 					</div>
 					<div class="col-7">
 						<div class="form-check">
-							<input type="checkbox" class="form-check-input" id="checkbox_to_halfwidth" checked="checked">
+							<input type="checkbox" class="form-check-input" id="checkbox_to_halfwidth"
+								checked="checked">
 						</div>
 					</div>
 				</div>
@@ -241,7 +247,8 @@
 					</div>
 					<div class="col-7">
 						<div class="form-check">
-							<input type="checkbox" class="form-check-input" id="checkbox_exclude_pdic_src" checked="checked">
+							<input type="checkbox" class="form-check-input" id="checkbox_exclude_pdic_src"
+								checked="checked">
 						</div><br>
 						<small class="form-text text-muted">
 							生成された文がフレーズ辞書に登録されている場合、<br>その生成された文を除き、文の再生成を試みます。
@@ -250,7 +257,8 @@
 				</div>
 				<div class="form-group row">
 					<div class="col-sm-10">
-						<button type="button" id="button_generate_sentences" class="btn btn-primary" disabled>文生成</button>
+						<button type="button" id="button_generate_sentences" class="btn btn-primary"
+							disabled>文生成</button>
 					</div>
 				</div>
 			</form>
@@ -265,7 +273,8 @@
 			</div>
 		</section>
 
-		<div class="modal fade" id="modal_user_dict" tabindex="-1" role="dialog" aria-labelledby="user_dict_modal_label" aria-hidden="true">
+		<div class="modal fade" id="modal_user_dict" tabindex="-1" role="dialog" aria-labelledby="user_dict_modal_label"
+			aria-hidden="true">
 			<div class="modal-dialog modal-lg" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
@@ -288,11 +297,12 @@
 
 	<footer class="my-4">
 		<p>
-			ボイロフレーズジェネレーター Ver,1.0.2 (更新履歴は<a href="./change_log.html" target="_self">こちら</a>)
-			<address>
-				作者:民火 (Twitter:<a href="https://twitter.com/tammybee_tmb" target="_blank">@tammybee_tmb</a>)
-			</address>
+			ボイロフレーズジェネレーター Ver,1.0.3 (更新履歴は<a href="./change_log.html" target="_self">こちら</a>)
+		<address>
+			作者:民火 (Twitter:<a href="https://twitter.com/tammybee_tmb" target="_blank">@tammybee_tmb</a>)
+		</address>
 		</p>
 	</footer>
 </body>
+
 </html>
