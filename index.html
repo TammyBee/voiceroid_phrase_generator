@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>ボイロフレーズジェネレーター</title>
+	<meta name="description" content="VOICEROIDのフレーズ辞書に登録された文をもとに、文を自動生成するサイトです。">
+	<meta name="author" content="民火">
+	<meta property="og:title" content="ボイロフレーズジェネレーター">
+	<meta property="og:description" content="VOICEROIDのフレーズ辞書に登録された文をもとに、文を自動生成するサイトです。">
+	<meta property="og:url" content="https://tammybee.github.io/voiceroid_phrase_generator/">
+	<meta property="og:image" content="https://tammybee.github.io/voiceroid_phrase_generator/ogp.png">
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:site" content="tammybee_tmb">
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<script src="js/jquery-3.4.1.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="js/main.js" charset="UTF-8"></script>
+	<link rel="stylesheet" href="css/main.css">
+</head>
+
+<body class="container">
+	<header>
+		<h1>ボイロフレーズジェネレーター</h1>
+		<p>
+			VOICEROIDのフレーズ辞書に登録された文をもとに、マルコフ連鎖で文を自動生成するサイトです。
+		</p>
+		<section class="my-4">
+			<h2>使い方</h2>
+			<p>
+			<ol>
+				<li>
+					<p>
+						VOICEROIDのフレーズ辞書ファイルを選択します。
+					</p>
+				</li>
+				<li>
+					<p>
+						「モデル生成」ボタンを押します。<br>
+						「文生成」ボタンが押せるようになるまで待ちましょう。
+					</p>
+				</li>
+				<li>
+					<p>
+						好きなだけ「文生成」ボタンを押します。<br>
+						一旦ページを離れても、生成されたモデル*1がブラウザ上に保存されるため、モデルを生成しなくとも文を生成できます。
+					</p>
+				</li>
+			</ol>
+			<small>*1 正確に言うと、分かち書き(単語ごとに分割)した後のフレーズの配列</small>
+			</p>
+		</section>
+	</header>
+
+	<main>
+		<section id="section_build_model" class="my-4">
+			<h2>モデル生成</h2>
+			<form id="form_build_model">
+				<div class="form-group row">
+					<label for="input_txt_file" class="col-3 col-form-label">フレーズ辞書</label>
+					<div class="col-7">
+						<input type="file" id="input_txt_file" class="form-control-file" accept=".pdic">
+						<small class="form-text text-muted">
+							VOICEROIDのフレーズ辞書ファイル(*.pdic)を選択してください。<br>
+							VOICEROID2エディタの場合、フレーズ辞書の場所は「ツール > オプション > ユーザー辞書 > フレーズ辞書」から確認することができます。
+						</small>
+					</div>
+				</div>
+				<div class="form-group row">
+					<div class="col-3">
+						<label for="checkbox_unicode_normalization" class="form-check-label">Unicode正規化</label>
+					</div>
+					<div class="col-7">
+						<div class="form-check">
+							<input type="checkbox" class="form-check-input" id="checkbox_unicode_normalization">
+						</div><br>
+						<small class="form-text text-muted">
+							チェックを入れると、一部の表記揺れに対応します。
+						</small>
+					</div>
+				</div>
+				<div class="form-group row">
+					<div class="col-3">
+						<label for="textarea_user_dict" class="form-check-label">ユーザー定義辞書</label>
+					</div>
+					<div class="col-7">
+						<textarea class="form-control" id="textarea_user_dict" rows="3"
+							placeholder="琴葉茜,名詞,コトノハアカネ&#13;&#10;琴葉葵,名詞,コトノハアオイ"></textarea>
+						<small class="form-text text-muted">
+							「&lt;表層形&gt;,&lt;品詞&gt;,&lt;読み&gt;」の形式で記述してください。<br>
+							複数の単語を登録する場合は改行して記述します。
+						</small>
+					</div>
+				</div>
+				<fieldset class="form-group">
+					<div class="row">
+						<legend class="col-form-label col-3">英字変換</legend>
+						<div class="col-7">
+							<div class="form-check">
+								<input class="form-check-input" type="radio" name="gridRadios_alphabet_filter"
+									id="radio_no_alphabet_filter" value="no_alphabet_filter" checked>
+								<label class="form-check-label" for="gridRadios1">
+									なし
+								</label>
+							</div>
+							<div class="form-check">
+								<input class="form-check-input" type="radio" name="gridRadios_alphabet_filter"
+									id="radio_to_lower_case" value="to_lower_case">
+								<label class="form-check-label" for="gridRadios2">
+									小文字化 (例: A → a, Voiceroid → voiceroid)
+								</label>
+							</div>
+							<div class="form-check">
+								<input class="form-check-input" type="radio" name="gridRadios_alphabet_filter"
+									id="radio_to_upper_case" value="to_upper_case">
+								<label class="form-check-label" for="gridRadios3">
+									大文字化 (例: a → A, Voiceroid → VOICEROID)
+								</label>
+							</div>
+						</div>
+					</div>
+				</fieldset>
+				<div class="form-group row">
+					<div class="col-3">
+						<label for="checkbox_compound_noun" class="form-check-label">複合名詞化</label>
+					</div>
+					<div class="col-7">
+						<div class="form-check">
+							<input type="checkbox" class="form-check-input" id="checkbox_compound_noun">
+						</div><br>
+						<small class="form-text text-muted">
+							チェックを入れると、連続する名詞をひとまとめにします。<br>
+							ただし、生成される文の変化が少なくなる可能性があります。<br>
+							(例) "琴","葉","姉妹" → "琴葉姉妹"
+						</small>
+					</div>
+				</div>
+				<button type="button" id="button_build_model" class="btn btn-primary">モデル生成</button>
+			</form>
+		</section>
+
+		<section id="section_show_model" class="my-4">
+			<h2>現在のモデル</h2>
+			<table class="table" style="table-layout:fixed;">
+				<thead>
+					<tr>
+						<th colspan="2">結果</th>
+						<th colspan="5">パラメータ</th>
+					</tr>
+					<tr>
+						<th>フレーズ数</th>
+						<th>単語数</th>
+						<th>Unicode正規化</th>
+						<th>ユーザー定義辞書</th>
+						<th>英字変換</th>
+						<th>複合名詞化</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td id="view_model_info_number_of_phrases">-</td>
+						<td id="view_model_info_number_of_segments">-</td>
+						<td id="view_model_info_unicode_normalization">-</td>
+						<td id="view_model_info_user_dict">-</td>
+						<td id="view_model_info_alphabet_filter">-</td>
+						<td id="view_model_info_compound_noun">-</td>
+						<td>
+							<div class="text-right">
+								<button type="button" id="button_delete_model" class="btn btn-danger"
+									disabled>削除</button>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</section>
+
+		<section id="section_generate_sentences" class="my-4">
+			<h2>文生成</h2>
+			<form id="form_generate_sentences" class="form-horizontal">
+				<div class="form-group row">
+					<label for="input_start_word" class="col-3 col-form-label">最初の単語 (任意)</label>
+					<div class="col-7">
+						<input type="text" class="form-control" id="input_start_word" value="" />
+						<small class="form-text text-muted">
+							指定した単語で始まる文を生成します。<br>
+							指定しない場合は、ランダムな単語から始まる文を生成します。
+						</small>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label for="input_contain_string" class="col-3 col-form-label">含まれる文字列 (任意)</label>
+					<div class="col-7">
+						<input type="text" class="form-control" id="input_contain_string" value="" />
+						<small class="form-text text-muted">
+							指定した文字列を含む文を生成します。<br>
+							「,」で区切ることで複数の文字列を指定できます。<br>
+							(例) "茜,葵" → 「茜」と「葵」の両方を含む文を生成します。
+						</small>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label for="input_number_of_sentences" class="col-3 col-form-label">生成する文の数</label>
+					<div class="col-7">
+						<input type="number" class="form-control" id="input_number_of_sentences" value="10" min="1" />
+					</div>
+				</div>
+				<div class="form-group row">
+					<label for="input_min_sentence_length" class="col-3 col-form-label">生成する文の長さの最小値</label>
+					<div class="col-7">
+						<input type="number" class="form-control" id="input_min_sentence_length" value="20" min="1" />
+					</div>
+				</div>
+				<div class="form-group row">
+					<label for="input_max_sentence_length" class="col-3 col-form-label">生成する文の長さの最大値</label>
+					<div class="col-7">
+						<input type="number" class="form-control" id="input_max_sentence_length" value="120" min="1" />
+					</div>
+				</div>
+				<div class="form-group row">
+					<label for="input_max_number_of_trials" class="col-3 col-form-label">文生成の最大試行回数</label>
+					<div class="col-7">
+						<input type="number" class="form-control" id="input_max_number_of_trials" value="100" min="1" />
+						<small class="form-text text-muted">
+							"[Error] 指定した条件の文を生成できませんでした。"という文が頻出する時は、<br>
+							生成する文の条件を緩くするか、この数値を大きくしてください。
+						</small>
+					</div>
+				</div>
+				<div class="form-group row">
+					<div class="col-3">
+						<label for="checkbox_to_halfwidth" class="form-check-label">英数字を半角に変換</label>
+					</div>
+					<div class="col-7">
+						<div class="form-check">
+							<input type="checkbox" class="form-check-input" id="checkbox_to_halfwidth"
+								checked="checked">
+						</div>
+					</div>
+				</div>
+				<div class="form-group row">
+					<div class="col-3">
+						<label for="checkbox_exclude_pdic_src" class="form-check-label">フレーズ辞書との重複回避</label>
+					</div>
+					<div class="col-7">
+						<div class="form-check">
+							<input type="checkbox" class="form-check-input" id="checkbox_exclude_pdic_src"
+								checked="checked">
+						</div><br>
+						<small class="form-text text-muted">
+							生成された文がフレーズ辞書に登録されている場合、<br>その生成された文を除き、文の再生成を試みます。
+						</small>
+					</div>
+				</div>
+				<div class="form-group row">
+					<div class="col-sm-10">
+						<button type="button" id="button_generate_sentences" class="btn btn-primary"
+							disabled>文生成</button>
+					</div>
+				</div>
+			</form>
+		</section>
+
+		<section id="section_show_generated_sentences" class="my-4">
+			<h2>生成結果</h2>
+			<div class="container">
+				<table id="view_result_generated_sentences" class="table table-bordered">
+
+				</table>
+			</div>
+		</section>
+
+		<div class="modal fade" id="modal_user_dict" tabindex="-1" role="dialog" aria-labelledby="user_dict_modal_label"
+			aria-hidden="true">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="user_dict_modal_label">ユーザー定義辞書</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body" id="modal_body_user_dict"></div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary" id="button_user_dict_copy">Copy</button>
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<br><br><br><br>
+
+	<footer class="my-4">
+		<p>
+			ボイロフレーズジェネレーター Ver,1.0.3 (更新履歴は<a href="./change_log.html" target="_self">こちら</a>)
+		<address>
+			作者:民火 (Twitter:<a href="https://twitter.com/tammybee_tmb" target="_blank">@tammybee_tmb</a>)
+		</address>
+		</p>
+	</footer>
+</body>
+
+</html>
